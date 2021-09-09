@@ -3,5 +3,5 @@
 from .calc import derive_angle
 
 __all__ = [
-    "derive_angle",
+    "derive_angle", 'calc', 'distorted_orbit'
 ]
