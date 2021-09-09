@@ -25,6 +25,7 @@ def closed_orbit_kick_unscaled(mu: np.array, *, tune: float, mu_i: float) -> np.
                   \\left|{\\mu_i - \\mu(s)}
                  \\right|
          \\right)}
+
     """
     mu = np.asarray(mu)
 
@@ -68,7 +69,7 @@ def closed_orbit_distortion(
     theta_i: float,
     mu_i: float
 ) -> np.ndarray:
-    """Calculate orbit distortion created by one kicker
+    r"""Calculate orbit distortion created by one kicker
 
     Args:
         beta:   betatron function along the ring
@@ -83,18 +84,19 @@ def closed_orbit_distortion(
 
     .. math::
 
-        \\frac{\\sqrt{\\beta(s)}}{2 \\pi Q}\\cdot closed\\_orbit\\_kick
+        \frac{\sqrt{\beta(s)}}{2 \pi Q}\cdot closed\_orbit\_kick
 
 
     full equation
 
-    ..math::
-        \\frac{\\sqrt{\\beta(s)}}{2 \\sin{\\left(\\pi Q\right)}}
-        \\cdot  \\vartheta_i \\sqrt{\\beta_i}
-        \\cos{\\left(
-            \\pi Q -
-                  \\left|\\mu_i - \\mu(s) \\right|
-         \\right)}
+    .. math::
+
+        \frac{\sqrt{\beta(s)}}{2 \sin{\left(\pi Q\right)}}
+        \cdot  \vartheta_i \sqrt{\beta_i}
+        \cos{\left(
+            \pi Q -
+                  \left|\mu_i - \mu(s) \right|
+         \right)}
 
 
     """
@@ -111,4 +113,4 @@ def closed_orbit_distortion(
     return r
 
 
-__all__ = ["closed_orbit_distortion"]
+__all__ = ["closed_orbit_distortion", "closed_orbit_kick_unscaled", "closed_orbit_kick"]

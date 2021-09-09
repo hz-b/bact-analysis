@@ -19,18 +19,18 @@ def angle_to_offset(tf: float, length: float, polarity: int, alpha: float) -> fl
     .. math::
 
         \frac{\Delta \vartheta}{\Delta I} =
-                \frac{\Delta K_1}{\Delta I}\, L \,\Delta
+                \frac{\Delta K_1}{\Delta I}\, L \,\Delta x_{quad}
 
-    Here the specific kick angle :math:\alpha` and the specific
-    exitation :math:`t_f are used.
+    Here the specific kick angle :math:`\alpha` and the specific
+    exitation :math:`t_f` are used.
 
     .. math::
-        \alpha = \frac{\Delta \vartheta}{\Delta I}
+        \alpha = \frac{\Delta \vartheta}{\Delta I} \qquad
          t_f = \frac{\Delta K_1}{\Delta I}
 
     Thus one obtains
 
-    .. math:
+    .. math::
         \Delta x_{quad} = \frac{\alpha}{L \, t_f}
 
     """

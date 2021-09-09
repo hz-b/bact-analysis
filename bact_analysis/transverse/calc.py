@@ -134,4 +134,9 @@ def derive_angle(
     return result
 
 
-__all__ = ["derive_angle"]
+__all__ = [
+    "derive_angle",
+    "scale_orbit_distortion",
+    "for_fitting_reference_orbit",
+    "angle",
+]
