@@ -84,7 +84,7 @@ def closed_orbit_distortion(
 
     .. math::
 
-        \frac{\sqrt{\beta(s)}}{2 \pi Q}\cdot closed\_orbit\_kick
+        \frac{\sqrt{\beta(s)}}{2 \sin{\left(\pi Q\right)}}\cdot closed\_orbit\_kick
 
 
     full equation
