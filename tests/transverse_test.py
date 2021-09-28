@@ -5,6 +5,8 @@ from bact_analysis.transverse import calc, distorted_orbit
 
 
 class TestKick00_Basis(unittest.TestCase):
+    """ """
+
     def test00_Offset(self):
         """Creation of offset matrix"""
 
@@ -65,16 +67,25 @@ class TestKick00_Basis(unittest.TestCase):
         )
 
 
-class TestKick10_Angle(unittest.TestCase):
+class KickAngleSetup:
     def setUp(self):
         orb = np.sin(np.linspace(0, 2 * np.pi, num=5))
-        self.orbit = xr.DataArray(data=orb, dims=["pos"])
+        self.orbit = xr.DataArray(
+            data=orb, dims=["pos"], coords=[[f"pos_{p}" for p in range(len(orb))]]
+        )
 
-        self.excitation = xr.DataArray(data=[-1, 1], dims=["step"])
+        excitation = [-1, 1]
+        self.excitation = xr.DataArray(
+            data=excitation,
+            dims=["step"],
+            coords=[[f"step_{s}" for s in range(len(excitation))]],
+        )
 
         self.measurement = self.excitation * self.orbit
         self.eps = 1e-9
 
+
+class TestKick10_Angle(KickAngleSetup, unittest.TestCase):
     def test20_DeriveAngleZeros(self):
         """Check that fit works when all data are zero"""
 
@@ -98,7 +109,7 @@ class TestKick10_Angle(unittest.TestCase):
 
     def test21_DeriveAnglesSingleOffset(self):
         """See if offset if found if a single value is deviated"""
-        t_pos = 2
+        t_pos = "pos_2"
         val = 2
         meas = self.measurement.copy()
         meas.loc[dict(pos=t_pos)] = val
@@ -116,84 +127,85 @@ class TestKick10_Angle(unittest.TestCase):
         self.assertTrue((np.absolute(res) < self.eps).all())
 
 
+class TestKick20_Angle(KickAngleSetup, unittest.TestCase):
+    """Improper setup x arrays"""
+
+    def setUp(self):
+        super().setUp()
+        # Now create measurement with measurement dimensions swapped
+
+        meas = self.measurement
+        d = {name: item for name, item in meas.coords.items()}
+        n_pos = np.arange(len(meas.coords["pos"]) * 2)
+        d["pos"] = n_pos
+        t_c = [item for _, item in d.items()]
+        m = xr.DataArray(dims=d.keys(), coords=t_c)
+        m.data[:, :] = 0.0
+        self.measurement = m
+
+    def test_00(self):
+        """Mismatch of dimension length will be properly reported
+
+        Currently only testing that an exception is raised. Will trigger
+        log message generation
+        """
+        self.assertRaises(
+            ValueError, calc.derive_angle, self.orbit, self.excitation, self.measurement
+        )
+
+
 class TestOrbit(unittest.TestCase):
     """ """
 
     def setUp(self):
         N = 5
-        self.beta = np.linspace(1, 2, num=N)
-        self.mu = np.linspace(0, (np.pi / 2), num=N)
+        beta = np.linspace(1, 2, num=N)
+        mu = np.linspace(0, (np.pi / 2), num=N)
+
+        dims = ["pos"]
+        self.beta_mu = xr.Dataset(
+            dict(
+                beta=xr.DataArray(data=beta, dims=dims),
+                mu=xr.DataArray(data=beta, dims=dims),
+            )
+        )
+
         self.eps = 1e-7
 
-    def test10_UnitUnscaledKick(self):
-        """negative side so to say ...."""
-        tune = 1
-
-        f = distorted_orbit.closed_orbit_kick_unscaled
-        res = f(self.mu, tune=tune, mu_i=0)
-        test = np.cos(tune * np.pi - self.mu)
-        self.assertTrue((np.absolute(res - test) < self.eps).all())
-
-    def test11_UnitUnscaledKick(self):
-        """positive side so to say ...."""
-        tune = 1
-        mu_i = tune * np.pi
-
-        f = distorted_orbit.closed_orbit_kick_unscaled
-        res = f(self.mu, tune=tune, mu_i=mu_i)
-        test = np.cos(-self.mu)
-        self.assertTrue((np.absolute(res - test) < self.eps).all())
-
-    def test20_UnitScaledKick(self):
-        tune = 1
-
-        f = distorted_orbit.closed_orbit_kick
-        res = f(self.mu, tune=tune, mu_i=0, theta_i=1, beta_i=1)
-        test = np.cos(tune * np.pi - self.mu)
-        self.assertTrue((np.absolute(res - test) < self.eps).all())
-
-    def test20_UnitScaledKick2(self):
-        tune = 1
-
-        f = distorted_orbit.closed_orbit_kick
-        res = f(self.mu, tune=tune, mu_i=0, theta_i=2, beta_i=4)
-        test = np.cos(tune * np.pi - self.mu)
-        # One two for the angle and one for the squared beta_i
-        test *= 2 * 2
-        self.assertTrue((np.absolute(res - test) < self.eps).all())
-
     def test30_noDistortion(self):
-        res = distorted_orbit.closed_orbit_distortion(
-            self.beta, self.mu, tune=self.mu.max() * 2, beta_i=0, theta_i=0, mu_i=0
+        dims = ["pos"]
+        beta_mu_p = xr.Dataset(
+            dict(
+                beta=xr.DataArray(data=[0], dims=dims),
+                mu=xr.DataArray(data=[0], dims=dims),
+            )
         )
+        res = distorted_orbit.closed_orbit_distortion(self.beta_mu, beta_mu_p, 0)
         self.assertTrue((np.absolute(res) < self.eps).all())
 
     def test31_UnitDistortionZero(self):
-        tune = 1
+        dims = ["pos"]
 
-        res = distorted_orbit.closed_orbit_distortion(
-            self.beta, self.mu, tune=tune, beta_i=0, theta_i=1, mu_i=0
+        beta_mu_p = xr.Dataset(
+            dict(
+                beta=xr.DataArray(data=[0], dims=dims),
+                mu=xr.DataArray(data=[0], dims=dims),
+            )
         )
-        # Still 0: beta is 0
+        res = distorted_orbit.closed_orbit_distortion(self.beta_mu, beta_mu_p, 0)
         self.assertTrue((np.absolute(res) < self.eps).all())
 
-    def test32_UnitDistortion(self):
-        tune = 1 + 1 / 2
-
-        test = np.cos(self.mu)
-
-        beta = np.ones(self.beta.shape)
-        res = distorted_orbit.closed_orbit_distortion(
-            beta, self.mu, tune=tune, beta_i=1, theta_i=1, mu_i=tune * np.pi
+        tune = 1
+        beta_mu_p2 = xr.Dataset(
+            dict(
+                beta=xr.DataArray(data=[0], dims=dims),
+                mu=xr.DataArray(data=[tune], dims=dims),
+            )
         )
-        self.assertTrue((np.absolute(res + test / 2) < self.eps).all())
-
-        beta_sq = np.arange(1, 6)
-        beta = beta_sq ** 2
-        res = distorted_orbit.closed_orbit_distortion(
-            beta, self.mu, tune=tune, beta_i=1, theta_i=1, mu_i=tune * np.pi
-        )
-        self.assertTrue((np.absolute(res + beta_sq * test / 2) < self.eps).all())
+        beta_mu = xr.concat([self.beta_mu, beta_mu_p2], dim="pos")
+        res = distorted_orbit.closed_orbit_distortion(beta_mu, beta_mu_p, 0)
+        # Still 0: beta is 0
+        self.assertTrue((np.absolute(res) < self.eps).all())
 
 
 if __name__ == "__main__":
