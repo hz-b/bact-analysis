@@ -1,8 +1,15 @@
+"""Estimating kick from measurment: fit prepartion and support routines
+
+Main entry point: :func:`derive_angle`
+"""
 from typing import Sequence
-import numpy as np
+import logging
+
 from scipy.linalg import lstsq
 import xarray as xr
 from bact_math_utils.linear_fit import x_to_cov, cov_to_std
+
+logger = logging.getLogger("bact-analysis")
 
 
 def angle(dist_orb: xr.Dataset, meas_orb: xr.Dataset) -> (xr.Dataset, xr.Dataset):
@@ -88,7 +95,10 @@ def scale_orbit_distortion(
     (dim_e,) = excitation.dims
 
     if dim_o == dim_e:
-        txt = "orbit sole dimension name '{}' must not match excitation's sole dimension name '{}'"
+        txt = (
+            "orbit sole dimension name '{}' must not match excitation's"
+            " sole dimension name '{}'"
+        )
         raise AssertionError(txt.format(dim_e, dim_o))
 
     #: must increase dimensions of array
@@ -112,7 +122,7 @@ def derive_angle(
     """
     sorb = scale_orbit_distortion(orbit, excitation)
 
-    # scale orbit distortion has checkt that dimension names are different
+    # scale orbit distortion has checks that dimension names are different
     (dim_o,) = orbit.dims
     (dim_e,) = excitation.dims
 
@@ -126,10 +136,30 @@ def derive_angle(
 
     stack_coords = dict(fit_indep=[dim_e, dim_o])
     A = A_prep.stack(stack_coords)
-    meas = measurement.stack(stack_coords)
-
+    try:
+        meas = measurement.stack(stack_coords)
+    except Exception as exc:
+        msg = (
+            f"Request for stacking coordinates {stack_coords},"
+            f" but measurement had only coords {measurement.coords}"
+        )
+        logger.error(msg)
+        raise exc
     # excecute fit
-    result = angle(A.T, meas)
+    try:
+        result = angle(A.T, meas)
+    except ValueError as exc:
+        txt = (
+            f" {__name__}:derive_angle"
+            f" A dims {A.dims} with shape {A.shape}"
+            f" b dims {meas.dims} with shape {meas.shape}"
+            f" A_prep dims {A_prep.dims} with shape {A_prep.shape}"
+            f" measurement dims {measurement.dims} with shape {measurement.shape}."
+            f" The dimensions {dim_o} and {dim_e} must match in A_prep and measurement."
+            f" The dimension 'paramter' should match length of {dim_o} + 1"
+        )
+        logger.error(txt)
+        raise exc
 
     return result
 
