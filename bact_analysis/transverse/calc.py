@@ -7,6 +7,7 @@ import logging
 
 from scipy.linalg import lstsq
 import xarray as xr
+import numpy as np
 from bact_math_utils.linear_fit import x_to_cov, cov_to_std
 
 logger = logging.getLogger("bact-analysis")
@@ -107,7 +108,11 @@ def scale_orbit_distortion(
 
 
 def derive_angle(
-    orbit: xr.DataArray, excitation: xr.DataArray, measurement: xr.DataArray
+    orbit: xr.DataArray,
+    excitation: xr.DataArray,
+    measurement: xr.DataArray,
+    *,
+    weights: xr.DataArray = None,
 ) -> xr.DataArray:
     """Kicker angle derived from expected orbit, excitation and distortion measurements
 
@@ -116,15 +121,22 @@ def derive_angle(
         excitation:  different excitations applied to the magnet
         measurement: the measured orbit distortions (containing
                      difference orbit)
+        weights (default =None): weights of the measurements
+
 
     Returns:
         angle and orbit offsets (value and errors)
     """
-    sorb = scale_orbit_distortion(orbit, excitation)
+    if weights is None:
+        sqw = None
+    else:
+        sqw = np.sqrt(weights)
 
     # scale orbit distortion has checks that dimension names are different
     (dim_o,) = orbit.dims
     (dim_e,) = excitation.dims
+
+    sorb = scale_orbit_distortion(orbit, excitation)
 
     pos = orbit.coords[dim_o]
     step = excitation.coords[dim_e]
@@ -132,10 +144,39 @@ def derive_angle(
 
     # perpare array so that offset and angle can be fit at once
     sorb = sorb.expand_dims(parameter=["scaled_angle"])
-    A_prep = xr.concat([sorb, orb_off], dim="parameter")
+    dim_parameter = "parameter"
+    A_prep = xr.concat([sorb, orb_off], dim=dim_parameter)
+
+    # Scale independents matrix with weights
+    # If the orb_off is not scaled  the result will be "interesting"
+    if sqw is not None:
+        try:
+            A_prep = A_prep * sqw
+        except Exception as exc:
+            txt = (
+                f"{__name__}.derive_angle: Failed to apply weights: {exc}"
+                f" sorb.shape : {sorb.shape} weight dims {sqw.shape}"
+                f"types: sorb : {type(sorb)} weight dims {type(sqw)}"
+            )
+            logger.error(txt)
+            logger.error(f" sorb.dims : {sorb.dims} weight dims {sqw.dims}")
+            raise exc
 
     stack_coords = dict(fit_indep=[dim_e, dim_o])
     A = A_prep.stack(stack_coords)
+
+    # scale measured data "b" column
+    if sqw is not None:
+        try:
+            measurement = measurement * sqw
+        except Exception as exc:
+            txt = (
+                f"{__name__}.derive_angle: Failed to apply weights: {exc}"
+                f" measurement.dims : {measurement.dims} weight dims {sqw.dims}"
+            )
+            logger.error(txt)
+            raise exc
+
     try:
         meas = measurement.stack(stack_coords)
     except Exception as exc:

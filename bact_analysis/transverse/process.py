@@ -30,6 +30,7 @@ def process_magnet_plane(
     excitation: xr.DataArray,
     offset: xr.DataArray,
     *,
+    weights: xr.DataArray = None,
     bpm_names: Sequence,
     theta: float,
     scale_tune: float = 1,
@@ -51,6 +52,7 @@ def process_magnet_plane(
             orbit=orbit_at_bpm,
             excitation=excitation,
             measurement=offset,
+            weights=weights,
         )
     except ValueError as exc:
         txt = (
@@ -72,14 +74,23 @@ def process_magnet(
     measurement: xr.Dataset,
     *,
     bpm_names,
+    use_weights=False,
     **kwargs,
 ) -> xr.Dataset:
+
+    if use_weights:
+        x_weights = 1.0 / measurement.x_rms
+        y_weights = 1.0 / measurement.y_rms
+    else:
+        x_weights = None
+        y_weights = None
 
     x_res = process_magnet_plane(
         selected_model.sel(plane="x"),
         selected_model_for_magnet.sel(plane="x"),
         measurement.excitation,
         measurement.x_pos,
+        weights=x_weights,
         bpm_names=bpm_names,
         **kwargs,
     )
@@ -88,6 +99,7 @@ def process_magnet(
         selected_model_for_magnet.sel(plane="y"),
         measurement.excitation,
         measurement.y_pos,
+        weights=y_weights,
         bpm_names=bpm_names,
         **kwargs,
     )

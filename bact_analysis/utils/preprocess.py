@@ -145,7 +145,6 @@ def reorder_by_groups(
 
 
 def rename_doublicates(names: list) -> [dict, list]:
-
     """Later names get a suffix added"""
 
     # How to do that in dict comprehension without calling names.count twice
@@ -166,10 +165,30 @@ def rename_doublicates(names: list) -> [dict, list]:
     return d, new_names
 
 
+def replace_names(names: list, replacement_names: dict) -> list:
+    """Replace  names with replacement names
+
+    Assumes that entries names are unique. If not behaviour is
+    undefined.
+
+    Used for preparing model for bba calculations
+    """
+
+    repl = list(replacement_names.keys())
+
+    n_names = names.copy()
+    for t_name, replacement in replacement_names.items():
+        idx = n_names.index(t_name)
+        n_names[idx] = replacement
+
+    return n_names
+
+
 __all__ = [
     "rename_doublicates",
     "reorder_by_groups",
     "enumerate_changed_value",
     "enumerate_changed_value_pairs",
     "reindex_slice",
+    "rename_names",
 ]
