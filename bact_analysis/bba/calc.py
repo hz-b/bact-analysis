@@ -3,7 +3,7 @@
 import dataclasses
 
 
-def angle_to_offset(tf: float, length: float, polarity: int, alpha: float) -> float:
+def angle_to_offset(tf: float, length: float, polarity: int, alpha: float, tf_scale : float=1.0) -> float:
     r"""Derive offset from measured specific kick angle
 
     Args:
@@ -11,6 +11,9 @@ def angle_to_offset(tf: float, length: float, polarity: int, alpha: float) -> fl
         length:   magnet length
         polarity: polarity of the circuit
         alpha:    angle per unit excitation
+        tf_scale: how to scale the transfer function (e.g. used if
+                  muxer auxcillary coils has many more windings than
+                  main coil)
 
 
     A (quadrupole) offset :math:`\Delta x_{quad}` gives an kick
@@ -35,7 +38,7 @@ def angle_to_offset(tf: float, length: float, polarity: int, alpha: float) -> fl
 
     """
 
-    devisor = tf * polarity * length
+    devisor = tf * tf_scale * polarity * length
     offset = alpha / devisor
     return offset
 
