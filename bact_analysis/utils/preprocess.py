@@ -124,7 +124,7 @@ def reindex_slice(
 def reorder_by_groups(
     xs: xr.Dataset, groups: xr.core.groupby.DatasetGroupBy, *, reordered_dim, **kwargs
 ):
-    """reorder data by column
+    """reorder data by group.
 
     See :func:`reindex_slice` for requried keyword arguments
     """

@@ -8,6 +8,7 @@ def angle_to_offset(tf: float, length: float, polarity: int, alpha: float, tf_sc
 
     Args:
         tf:       central quadrupole strength K1  per excitation
+                  dK/dI
         length:   magnet length
         polarity: polarity of the circuit
         alpha:    angle per unit excitation
@@ -36,6 +37,14 @@ def angle_to_offset(tf: float, length: float, polarity: int, alpha: float, tf_sc
     .. math::
         \Delta x_{quad} = \frac{\alpha}{L \, t_f}
 
+
+    Note:
+         due to conventions:
+                tf is positive for x and negative for y
+                if focusing or not focusing is now hidden in the poliarty?
+
+    Todo:
+        review handling of tf and polarity
     """
 
     devisor = tf * tf_scale * polarity * length

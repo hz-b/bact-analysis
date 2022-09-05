@@ -123,7 +123,6 @@ def derive_angle(
                      difference orbit)
         weights (default =None): weights of the measurements
 
-
     Returns:
         angle and orbit offsets (value and errors)
     """
@@ -144,8 +143,17 @@ def derive_angle(
 
     # perpare array so that offset and angle can be fit at once
     sorb = sorb.expand_dims(parameter=["scaled_angle"])
+    # logger.debug("droping dimension name")
+    # sorb = sorb.drop(dims=['name'])
     dim_parameter = "parameter"
-    A_prep = xr.concat([sorb, orb_off], dim=dim_parameter)
+    try:
+        A_prep = xr.concat([sorb, orb_off], dim=dim_parameter)
+    except Exception as exc:
+        logger.error('Failed to concat along dim "%s": reason %s', dim_parameter, exc)
+        logger.error("sorb dims  %s coords %s", sorb.dims, sorb.coords)
+        logger.error("orb_off %s", orb_off)
+        raise exc
+
 
     # Scale independents matrix with weights
     # If the orb_off is not scaled  the result will be "interesting"
