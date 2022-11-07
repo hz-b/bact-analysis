@@ -92,10 +92,10 @@ def data_for_elements(
     data = [start_and_end(name, indices) for name, indices in indices.items()]
     try:
         res = xr.concat(data, dim=name_dim)
-    except:
+    except Exception as exc:
         fmt = "%s.data_for_elements processing data:\n%s\n on dimension %s"
         logger.error(fmt, __name__, data[0], name_dim)
-        raise
+        raise exc
     # res = res.rename_dims(d_rename_dim).assign_coords(
     #    {element_name_dim: [name for name, _ in indices.items()]}
     # )

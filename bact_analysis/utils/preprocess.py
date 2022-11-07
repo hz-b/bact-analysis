@@ -5,6 +5,7 @@ import logging
 import copy
 import numpy as np
 import xarray as xr
+import xarray.core.groupby
 from bact_math_utils import misc as bmu
 
 logger = logging.getLogger("bact_analysis")
