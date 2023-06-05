@@ -34,7 +34,7 @@ def data_for_elements(
         coordinate_name: dimension name that contains the position names
         name_dim:        dimension name that will contain position names
                          in returned array
-        element_dim:     dimension name that will constain start and end
+        element_dim:     dimension name that will contain `start` and `end`
 
     Returns:
          dataset with start and end of element
@@ -47,7 +47,7 @@ def data_for_elements(
     """
     pos = input.coords.indexes[coordinate_name]
 
-    # Here the index has to be fou
+    # Here the index has to be found
     def t_index(name):
         idx = pos.get_loc(name)
         if idx < 1:
@@ -78,11 +78,18 @@ def data_for_elements(
     d_rename_dim = {coordinate_name: element_dim}
     d_nelem_dim = {element_dim: ["start", "end"]}
 
+    # look into the output that the calculation provided
+    # the output uses position names for the start and  end of the elemnt
+    # therefore the names of the positions used in the beam dynamics codes
+    # are renamed to start and end.
     def start_and_end(name, indices):
         start, end = indices
         data = (
+            # select the two positions in the beam dynamics data by index
             input.isel({coordinate_name: [start, end]})
-            .rename_dims(d_rename_dim)
+            # beam dynamics codes uses pos for the position names
+            # need to be renamed to start and end
+            .rename(d_rename_dim)
             .assign_coords(d_nelem_dim)
             .expand_dims({name_dim: [name]})
             .reset_coords(drop=True)
@@ -102,13 +109,15 @@ def data_for_elements(
     return res
 
 
+
 def interpolate_twiss(
     input: xr.Dataset,
     names: Sequence[str],
     *,
     coordinate_name: str = "pos",
-    name_dim: str = "name",
-    element_dim: str = "element",
+    name_dim: str = "elem",
+    # I would have written creat with an e
+    element_dim: str = "elem_pos",
     **kwargs,
 ) -> xr.Dataset:
     """ """

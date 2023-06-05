@@ -31,8 +31,12 @@ def angle(dist_orb: xr.Dataset, meas_orb: xr.Dataset) -> (xr.Dataset, xr.Dataset
         find an appropriate name to distinquish between value and error
         result a good one?
 
+        Find the right place to force the measured orbit to a proper dtype
     """
 
+    # enforce that measured orbit is a numpy array
+    # todo
+    meas_orb = np.array(meas_orb, dtype=np.float)
     fitres = lstsq(dist_orb, meas_orb)
 
     # only works if using numpy arrays
