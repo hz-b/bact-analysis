@@ -8,6 +8,7 @@ have length of the element.
 
 Convienience functions provided here
 """
+import pandas as pd
 import xarray as xr
 import numpy as np
 from typing import Sequence
@@ -78,11 +79,7 @@ def data_for_elements(
     d_rename_dim = {coordinate_name: element_dim}
     d_nelem_dim = {element_dim: ["start", "end"]}
 
-    # look into the output that the calculation provided
-    # the output uses position names for the start and  end of the elemnt
-    # therefore the names of the positions used in the beam dynamics codes
-    # are renamed to start and end.
-    def start_and_end(name, indices):
+    def start_and_end(indices):
         start, end = indices
         data = (
             # select the two positions in the beam dynamics data by index
@@ -91,14 +88,17 @@ def data_for_elements(
             # need to be renamed to start and end
             .rename(d_rename_dim)
             .assign_coords(d_nelem_dim)
-            .expand_dims({name_dim: [name]})
-            .reset_coords(drop=True)
+            #.expand_dims({name_dim: [name]})
+            # need to get rid of this coordinate
+            #the items of this coordinate will be different for each datum
+            .reset_index(dims_or_levels=coordinate_name, drop=True)
         )
         return data
 
-    data = [start_and_end(name, indices) for name, indices in indices.items()]
+    data = [start_and_end(indices) for _, indices in indices.items()]
     try:
-        res = xr.concat(data, dim=name_dim)
+        res = xr.concat(data , dim=pd.Index(name=name_dim, data=indices.keys()))
+
     except Exception as exc:
         fmt = "%s.data_for_elements processing data:\n%s\n on dimension %s"
         logger.error(fmt, __name__, data[0], name_dim)
