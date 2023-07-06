@@ -24,6 +24,7 @@ def data_for_elements(
     coordinate_name: str = "pos",
     name_dim: str = "name",
     element_dim: str = "element",
+    copy: bool = True
 ) -> xr.Dataset:
     """
     Args:
@@ -46,6 +47,9 @@ def data_for_elements(
         Review coordinate name variable.
         Check if xarray has a more straightforward use case
     """
+    if copy:
+        input = input.copy()
+
     pos = input.coords.indexes[coordinate_name]
 
     # Here the index has to be found
@@ -81,21 +85,20 @@ def data_for_elements(
 
     def start_and_end(indices):
         start, end = indices
-        data = (
-            # select the two positions in the beam dynamics data by index
-            input.isel({coordinate_name: [start, end]})
-            # beam dynamics codes uses pos for the position names
-            # need to be renamed to start and end
-            .rename(d_rename_dim)
-            .assign_coords(d_nelem_dim)
-            #.expand_dims({name_dim: [name]})
-            # need to get rid of this coordinate
-            #the items of this coordinate will be different for each datum
-            .reset_index(dims_or_levels=coordinate_name, drop=True)
-        )
-        return data
+        # select the two positions in the beam dynamics data by index
+        tmp = input.copy().isel({coordinate_name: [start, end]})
+        # beam dynamics codes uses pos for the position names
+        # need to be renamed to start and end
+        tmp = tmp.rename(d_rename_dim)
+        tmp = tmp.assign_coords(d_nelem_dim)
+        return tmp
 
-    data = [start_and_end(indices) for _, indices in indices.items()]
+    try:
+        data = [start_and_end(indices) for _, indices in indices.items()]
+    except:
+        logger.error(f"Failed for indices {indices}")
+        logger.error(f"Failed for input {input}")
+        raise
     try:
         res = xr.concat(data , dim=pd.Index(name=name_dim, data=indices.keys()))
 
