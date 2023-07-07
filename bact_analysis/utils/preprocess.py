@@ -122,7 +122,8 @@ def reindex_slice(
 
 
 def reorder_by_groups(
-    xs: xr.Dataset, groups: xr.core.groupby.DatasetGroupBy, *, reordered_dim, **kwargs
+    xs: xr.Dataset, groups, #: xr.core.groupby.DatasetGroupBy,
+             *, reordered_dim, **kwargs
 ):
     """reorder data by group.
 

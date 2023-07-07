@@ -57,6 +57,7 @@ def closed_orbit_distortion(
         "%s.closed_orbit_distortion using tune %s last phase advance %s,"
         " phase adavance at kick %s"
     )
+    #: todo renable this log
     logger.debug(fmt, __name__, tune, mu.isel(pos=-1).values, mu_i)
 
     ra = mdo.closed_orbit_distortion(

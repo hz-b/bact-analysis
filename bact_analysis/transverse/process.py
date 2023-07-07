@@ -34,6 +34,7 @@ class Result:
     # orbit at the beam position monitor
     orbit_at_bpm: xr.DataArray
     #: fit result of estimated kick
+    #: todo: rename to fit_result?
     result: xr.DataArray
 
 
@@ -47,7 +48,7 @@ def process_magnet_plane(
     bpm_names: Sequence,
     theta: float,
     scale_tune: float = 1,
-    scale_phase_advance: float = 2 * np.pi,
+    scale_phase_advance: float = 1,
 ) -> Result:
     """Derive the kick angle from measurement for one plane (for one magnet)
 
@@ -68,6 +69,7 @@ def process_magnet_plane(
         theta: which angle to use to calculate the reference orbit distortion
 
     Todo:
+
         Review if the calculation of the closed orbit distortion
         should be on the fly: could be precomputed
     """
@@ -76,8 +78,8 @@ def process_magnet_plane(
         selected_model,
         selected_model_for_magnet,
         theta=theta,
-        scale_tune=1,
-        scale_phase_advance=2 * np.pi,
+        scale_tune=scale_tune,
+        scale_phase_advance=scale_phase_advance,
     )
     try:
         orbit_at_bpm = orbit.sel(pos=bpm_names)

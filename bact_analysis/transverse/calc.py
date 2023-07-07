@@ -32,12 +32,15 @@ def angle(dist_orb: xr.Dataset, meas_orb: xr.Dataset) -> (xr.Dataset, xr.Dataset
         result a good one?
 
     """
+    N, p = dist_orb.shape
 
     fitres = lstsq(dist_orb, meas_orb)
+    _, residues, rank, _ = fitres
+    if rank != p:
+        raise AssertionError(f"Fit with {p} parameters returned a rank of {rank}")
 
     # only works if using numpy arrays
-    N, p = dist_orb.shape
-    cov = x_to_cov(dist_orb.values, fitres[1], N, p)
+    cov = x_to_cov(dist_orb.values, residues, N, p)
     std = cov_to_std(cov)
 
     parameters = xr.DataArray(
@@ -67,7 +70,9 @@ def for_fitting_reference_orbit(step: Sequence, pos: Sequence) -> xr.DataArray:
     """
 
     pos_offsets = xr.DataArray(
-        0.0, dims=["step", "pos", "parameter"], coords=[step, pos, pos]
+        0.0,
+        dims=[step.name, pos.name, "parameter"],
+        coords=[step, pos.values, pos.values],
     )
 
     for pos_name in pos:
@@ -107,7 +112,7 @@ def scale_orbit_distortion(
     return result
 
 
-def derive_angle(
+def derive_angle_and_offsets(
     orbit: xr.DataArray,
     excitation: xr.DataArray,
     measurement: xr.DataArray,
@@ -125,6 +130,11 @@ def derive_angle(
 
     Returns:
         angle and orbit offsets (value and errors)
+
+    Derives angles and offsets in one step.
+
+    Warning:
+        Use with care. May give bogous results on real machine data.
     """
     if weights is None:
         sqw = None
@@ -141,11 +151,13 @@ def derive_angle(
     step = excitation.coords[dim_e]
     orb_off = for_fitting_reference_orbit(step, pos)
 
-    # perpare array so that offset and angle can be fit at once
+    #: todo: handle dimension parameter consistenly
+    dim_parameter = "parameter"
+    # perpare array so that bpm offset and excitation angle can be fit at once
+    #: use dim_parameter here too!
     sorb = sorb.expand_dims(parameter=["scaled_angle"])
     # logger.debug("droping dimension name")
     # sorb = sorb.drop(dims=['name'])
-    dim_parameter = "parameter"
     try:
         A_prep = xr.concat([sorb, orb_off], dim=dim_parameter)
     except Exception as exc:
@@ -153,7 +165,6 @@ def derive_angle(
         logger.error("sorb dims  %s coords %s", sorb.dims, sorb.coords)
         logger.error("orb_off %s", orb_off)
         raise exc
-
 
     # Scale independents matrix with weights
     # If the orb_off is not scaled  the result will be "interesting"
@@ -213,8 +224,52 @@ def derive_angle(
     return result
 
 
+def derive_angle(
+    orbit: xr.DataArray,
+    excitation: xr.DataArray,
+    measurement: xr.DataArray,
+    *,
+    weights: xr.DataArray = None,
+) -> xr.DataArray:
+    """Kicker angle derived from expected orbit, excitation and distortion measurements
+
+    Args:
+        orbit:       orbit expected for some excitation (e.g. 10 urad)
+        excitation:  different excitations applied to the magnet
+        measurement: the measured orbit distortions (containing
+                     difference orbit)
+        weights (default =None): weights of the measurements
+
+    Returns:
+        angle(value and errors)
+
+    Assumes that the reference orbit is zero.
+    """
+    if weights is None:
+        sqw = None
+    else:
+        sqw = np.sqrt(weights)
+
+    # scale orbit distortion has checks that dimension names are different
+    (dim_o,) = orbit.dims
+    (dim_e,) = excitation.dims
+
+    sorb = scale_orbit_distortion(orbit, excitation)
+
+    if sqw is not None:
+        sorb = sorb * sqw
+
+    sorb = sorb.expand_dims(parameter=["scaled_angle"])
+    stack_coords = dict(fit_indep=[dim_e, dim_o])
+    A = sorb.stack(stack_coords)
+    meas = measurement.stack(stack_coords)
+    result = angle(A.T, meas)
+    return result
+
+
 __all__ = [
     "derive_angle",
+    "derive_angle_and_offsets",
     "scale_orbit_distortion",
     "for_fitting_reference_orbit",
     "angle",
