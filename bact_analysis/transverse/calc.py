@@ -38,9 +38,13 @@ def angle(dist_orb: xr.Dataset, meas_orb: xr.Dataset) -> (xr.Dataset, xr.Dataset
     # todo
     meas_orb = np.array(meas_orb, dtype=np.float)
     fitres = lstsq(dist_orb, meas_orb)
+    _, residues, rank, _ = fitres
+    N, p = dist_orb.shape
+
+    if rank != p:
+        raise AssertionError(f"Fit with {p} parameters returned a rank of {rank}")
 
     # only works if using numpy arrays
-    N, p = dist_orb.shape
     cov = x_to_cov(dist_orb.values, fitres[1], N, p)
     std = cov_to_std(cov)
 
