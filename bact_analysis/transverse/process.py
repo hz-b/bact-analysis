@@ -14,7 +14,7 @@ Todo:
    * better naming of module!
 """
 
-from .calc import derive_angle
+from .calc import derive_angle, derive_angle_and_offsets
 from .distorted_orbit import closed_orbit_distortion
 from ..utils.preprocess import rename_doublicates
 import xarray as xr
@@ -49,6 +49,7 @@ def process_magnet_plane(
     theta: float,
     scale_tune: float = 1,
     scale_phase_advance: float = 1,
+    fit_offset = True,
 ) -> Result:
     """Derive the kick angle from measurement for one plane (for one magnet)
 
@@ -93,8 +94,12 @@ def process_magnet_plane(
         logger.error("bpm_names %s", bpm_names)
         raise exc
 
+    if fit_offset:
+        fit_func = derive_angle_and_offsets
+    else:
+        fit_func = derive_angle
     try:
-        res = derive_angle(
+        res = fit_func(
             orbit=orbit_at_bpm,
             excitation=excitation,
             measurement=offset,
