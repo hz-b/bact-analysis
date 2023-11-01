@@ -191,5 +191,5 @@ __all__ = [
     "enumerate_changed_value",
     "enumerate_changed_value_pairs",
     "reindex_slice",
-    "rename_names",
+    "replace_names",
 ]
