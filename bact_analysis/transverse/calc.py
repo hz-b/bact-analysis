@@ -36,7 +36,7 @@ def angle(dist_orb: xr.Dataset, meas_orb: xr.Dataset) -> (xr.Dataset, xr.Dataset
 
     # enforce that measured orbit is a numpy array
     # todo
-    meas_orb = np.array(meas_orb, dtype=np.float)
+    meas_orb = np.array(meas_orb, dtype=float)
     fitres = lstsq(dist_orb, meas_orb)
     _, residues, rank, _ = fitres
     N, p = dist_orb.shape

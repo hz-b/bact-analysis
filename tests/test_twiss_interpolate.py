@@ -147,14 +147,14 @@ class TwissInterpolaterTwo(_TwissInterpolate, TestDataTwo):
         self.assertEqual(t_name2, self.name2)
 
     def checkReturn(self, data):
-        beta = data.beta.sel(name=self.name)
+        beta = data.beta.sel(elem=self.name)
         self.assertEqual(beta, 1)
-        nu = data.nu.sel(name=self.name)
+        nu = data.nu.sel(elem=self.name)
         self.assertEqual(nu, 4)
 
-        beta = data.beta.sel(name=self.name2)
+        beta = data.beta.sel(elem=self.name2)
         self.assertEqual(beta, 9)
-        nu = data.nu.sel(name=self.name2)
+        nu = data.nu.sel(elem=self.name2)
         self.assertEqual(nu, 18)
 
     def test20_checkDataForElements(self):
