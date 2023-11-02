@@ -47,14 +47,16 @@ jobs:
       run: | 
            t_dir=bact-math-utils
            if [ -f $t_dir/requirements.txt ]; then pip install -r $t_dir/requirements.txt; fi
-           pip install $t_dir
+           # make it a path, otherwise it searches pypi repo
+           pip install $t_dir/
            
     - name: Install dependencies and this package
       run: |
         t_dir=main
         if [ -f $t_dir/requirements.txt ]; then pip install -r $t_dir/requirements.txt; fi
         # need to install myself ?
-        pip install $t_dir
+        # make it a path otherwise pip serach pypi repo
+        pip install $t_dir/
         
     - name: Lint with flake8
       run: |
