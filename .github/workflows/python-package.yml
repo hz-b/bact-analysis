@@ -16,15 +16,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"] # ["3.9", "3.10", "3.11"]
     steps:
-    -  name: Checkout
-       uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          path: main
        
     - name: Checkout bact-math-utils
       uses: actions/checkout@v4
       with:
-          repository: my-org/bact-math-utils
+          repository: hz-b/bact-math-utils
           path: bact-math-utils
           
     - name: Set up Python ${{ matrix.python-version }}
@@ -49,9 +51,11 @@ jobs:
            
     - name: Install dependencies and this package
       run: |
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        t_dir = main
+        if [ -f $t_dir/requirements.txt ]; then pip install -r $t_dir/requirements.txt; fi
         # need to install myself ?
-        pip install .
+        pip install $t_dir
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
