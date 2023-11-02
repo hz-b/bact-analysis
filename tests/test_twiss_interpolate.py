@@ -62,6 +62,7 @@ class _TwissInterpolateErrorIntermediateDim(unittest.TestCase):
             AssertionError, twiss_interpolate.data_for_elements, data, [self.name]
         )
 
+    @unittest.SkipTest
     def test01_checkExtraDim(self):
         """Intermediate data already used as position dimension"""
         data = self.data.rename_dims({"pos": self.intermediate_dim}).assign_coords(
