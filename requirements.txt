@@ -1,2 +1,6 @@
 np
+scipy
+pandas
 xarray
+bact_math_utils
+
