@@ -1,6 +1,7 @@
 numpy
 scipy
 pandas
-# xarray
+# xarray: should be specific on version
+xarray
 bact_math_utils
 
