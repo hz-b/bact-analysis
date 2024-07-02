@@ -1,6 +1,6 @@
-np
+numpy
 scipy
 pandas
-xarray
+# xarray
 bact_math_utils
 

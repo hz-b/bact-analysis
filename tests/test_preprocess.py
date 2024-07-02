@@ -41,7 +41,7 @@ class TestUniqueSeen(unittest.TestCase):
         res = preprocess.enumerate_changed_value(arr)
 
         dt = arr.coords["time"] - res.coords["time"]
-        check = dt.values.astype(np.int_) == 0
+        check = dt.values.astype(int) == 0
         self.assertTrue(check.all())
 
     def test01(self):
@@ -51,13 +51,13 @@ class TestUniqueSeen(unittest.TestCase):
         res = preprocess.enumerate_changed_value_pairs(arr, arr2)
 
         dt = arr.coords["time"] - res.coords["time"]
-        check = dt.values.astype(np.int_) == 0
+        check = dt.values.astype(int) == 0
         self.assertTrue(check.all())
 
         check_values = (
             (np.arange(15)[:, np.newaxis] * np.ones(3)[np.newaxis, :])
             .ravel()
-            .astype(np.int_)
+            .astype(int)
         )
         check = (res.values - check_values) == 0
         self.assertTrue((check).all())
