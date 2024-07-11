@@ -1,3 +1,6 @@
+.. image:: https://github.com/hz-b/bact-analysis/actions/workflows/python-package.yml/badge.svg
+    :alt: https://github.com/hz-b/bact-analysis/actions/workflows/python-package.yml
+
 Analysis tools for accelerator optimisation problems
 ====================================================
 
