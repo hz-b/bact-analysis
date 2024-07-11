@@ -16,7 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        numpy-version: [ "numpy<2.0", "numpy>=2.0" ]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -30,13 +31,15 @@ jobs:
           path: bact-math-utils
           
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        numpy-version: ${{ matrix.numpy-version }} 
         cache: 'pip'
         cache-dependency-path: |
            **/setup.cfg
            **/requirements*.txt
+           **/pyproject.toml
 
     - name: Install pip
       run: |
@@ -56,7 +59,7 @@ jobs:
         if [ -f $t_dir/requirements.txt ]; then pip install -r $t_dir/requirements.txt; fi
         # need to install myself ?
         # make it a path otherwise pip serach pypi repo
-        pip install $t_dir/
+        pip install '${{ matrix.numpy-version }}' $t_dir/
         
     - name: Lint with flake8
       run: |
