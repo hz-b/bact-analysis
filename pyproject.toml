@@ -6,11 +6,11 @@ build-backend = "poetry.core.masonry.api"
 name = "bact-analysis"
 version = "0.1.0"
 description = "bact accelerator optimisation analysis tools"
-authors = ["Pierre Schnizer", "Teresia Olsson"]
+authors = ["Pierre Schnizer", "Waheedullah Sulaiman Khail"]
 license = "GPL-3.0"
-homepage = "https://github.com/hz-b/bact-math-utils"
-documentation = "https://github.com/hz-b/bact-math-utils"
-repository = "https://github.com/hz-b/bact-math-utils"
+homepage = "https://github.com/hz-b/bact-analysis"
+documentation = "https://github.com/hz-b/bact-analysis"
+repository = "https://github.com/hz-b/bact-analysi"
 keywords = []
 classifiers = [
     "Development Status :: 4 - Beta",
