@@ -1,0 +1,33 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "bact-analysis"
+version = "0.1.0"
+description = "bact accelerator optimisation analysis tools"
+authors = ["Pierre Schnizer", "Teresia Olsson"]
+license = "GPL-3.0"
+homepage = "https://github.com/hz-b/bact-math-utils"
+documentation = "https://github.com/hz-b/bact-math-utils"
+repository = "https://github.com/hz-b/bact-math-utils"
+keywords = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+numpy = "*"
+scipy = "*"
+pandas = "*"
+# xarray: should be specific on version
+xarray = "*"
+bact_math_utils = "*"
+
+
+
+
