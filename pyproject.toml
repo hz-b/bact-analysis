@@ -10,7 +10,7 @@ authors = ["Pierre Schnizer", "Waheedullah Sulaiman Khail"]
 license = "GPL-3.0"
 homepage = "https://github.com/hz-b/bact-analysis"
 documentation = "https://github.com/hz-b/bact-analysis"
-repository = "https://github.com/hz-b/bact-analysi"
+repository = "https://github.com/hz-b/bact-analysis"
 keywords = []
 classifiers = [
     "Development Status :: 4 - Beta",
